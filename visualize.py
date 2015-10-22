@@ -2,10 +2,8 @@ import pandas as pd
 import numpy as np
 import sklearn
 import sys
-sys.path.append('C:/Users/Brandon/Desktop')
-sys.path.append('C:/Users/Brandon/Documents/ORISE/')
-import fub
-import spam
+#sys.path.append('C:/Users/Brandon/Desktop')
+#sys.path.append('C:/Users/Brandon/Documents/ORISE/')
 import tkinter
 import itertools, math
 import random

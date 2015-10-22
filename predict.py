@@ -25,71 +25,10 @@ __date__      = "7/25/2015"
 __credits__   = ["Brandon Veber", "Rogelio Tornero-Velez", "Brandall Ingle",
                  "John Nichols"]
 __status__    = "Development"
-
-def MonteCarlo(nSims=25,featSelect='drugs',nFeatures=10,plot=False,save=False,
-                random_state=1,modelType='SVR',numTrainingSamples=1045,preSplit=False,
-                verbose=0):
-    res = []
-    for i in range(nSims):
-        if verbose > 0:print('\nMonte Carlo Simulation: ', i+1)
-        preds,actuals = main(featSelect,nFeatures,plot,save,random_state,
-                             i,modelType,numTrainingSamples,
-                             preSplit,verbose)
-        results,residuals = post_process.getResults(preds,actuals)
-        res.append(results)
-    try:
-        post_process.MonteCarlo(res,verbose)
-        return(res)
-    except:
-        return(res)
-
-def foldValidation(nFeatures=10,nFolds=10):
-    trainingFile = 'C:/Users/Brandon/Documents/ORISE/drug_training_192.csv'
-    testFile = 'C:/Users/Brandon/Documents/ORISE/drug_test_192.csv'
-    toxcastFile = 'C:/Users/Brandon/Documents/ORISE/toxcast_test_192.csv'
-    train,test,toxcast,yscaler = preprocess.mainPreSplit(trainingFile,testFile,
-                                                         toxcastFile,nFeatures=192)
-    kfTrain = sklearn.cross_validation.KFold(len(train['y']),nFolds)
-    modelOrig = sklearn.ensemble.RandomForestRegressor(n_estimators=100,random_state=1)
-    model = sklearn.ensemble.RandomForestRegressor(n_estimators=100)
-    #modelOrig.fit(train['X'],train['y'])
-    featuresListOrig = [88, 89, 154, 123, 73, 32, 65, 66, 69, 108, 129]#np.sort(np.argsort(modelOrig.feature_importances_)[-nFeatures:])
-    print('Original Feature List\n',featuresListOrig)
-    modelOrig.fit(train['X'][:,featuresListOrig],train['y_scaled'])
-    drugTrainRes = {'Train':{'mae':[],'rmse':[]},'Drugs':{'mae':[],'rmse':[]},'Toxcast':{'mae':[],'rmse':[]}}
-    kfTox = sklearn.cross_validation.KFold(len(toxcast['y']),nFolds)
-    res = {'Train':{'mae':[],'rmse':[]},'Drugs':{'mae':[],'rmse':[]},'Toxcast':{'mae':[],'rmse':[]}}
-    toxTrainRes = {'Train':{'mae':[],'rmse':[]},'Drugs':{'mae':[],'rmse':[]},'Toxcast':{'mae':[],'rmse':[]}}
-    X = {'Train':train['X'],'Drugs':test['X'],'Toxcast':[]}
-    actuals={'Train':train['y'],'Drugs':test['y'],'Toxcast':[]}
-    for trainInd,testInd in kfTox:
-        X_train,X_test = toxcast['X'][trainInd],toxcast['X'][testInd]
-        y_train,y_test = toxcast['y_scaled'][trainInd],toxcast['y'][testInd]
-        model.fit(X_train,y_train)
-        featuresList = np.sort(np.argsort(model.feature_importances_)[-nFeatures:])
-        print(featuresList)
-        model.fit(X_train[:,featuresList],y_train)
-        X['Toxcast'] = X_test
-        actuals['Toxcast'] = y_test
-        for key in toxTrainRes:
-            predsOrig = post_process.unscale(modelOrig.predict(X[key][:,featuresListOrig]),train,yscaler)
-            preds = post_process.unscale(model.predict(X[key][:,featuresList]),train,yscaler)
-            drugTrainRes[key]['mae'].append(sklearn.metrics.mean_absolute_error(predsOrig,actuals[key]))
-            drugTrainRes[key]['rmse'].append(np.sqrt(sklearn.metrics.mean_squared_error(predsOrig,actuals[key])))
-            toxTrainRes[key]['mae'].append(sklearn.metrics.mean_absolute_error(preds,actuals[key]))
-            toxTrainRes[key]['rmse'].append(np.sqrt(sklearn.metrics.mean_squared_error(preds,actuals[key])))
-    d = drugTrainRes; t = toxTrainRes
-    for key in t:
-        print(key);print('Drugs Training')
-        print(np.mean(d[key]['mae']),np.std(d[key]['mae']));
-        print(np.mean(d[key]['rmse']),np.std(d[key]['rmse']))
-        print('Toxcast Training')
-        print(np.mean(t[key]['mae']),np.std(t[key]['mae']));
-        print(np.mean(t[key]['rmse']),np.std(t[key]['rmse']))
-    return(drugTrainRes,toxTrainRes)
         
 
-def main(featSelect='predefined_RF',nFeatures=10,phase=1,plot=False,save=False,random_state=1,
+def main(trainingFile,testFile,toxcastFile,
+        featSelect='predefined_RF',nFeatures=10,phase=1,plot=False,save=False,random_state=1,
          feat_random_state=1,modelType='RF',numTrainingSamples=1045,preSplit=True,
          verbose=0):
     """Main machine learning analysis module.  Collects, and scales all data.  Then makes predictions
@@ -106,10 +45,11 @@ def main(featSelect='predefined_RF',nFeatures=10,phase=1,plot=False,save=False,r
     yScale='lnKa' #scale type for the fraction unbound target values. Supported options are the lnKa (pseudo equibilibrium) and None
     if phase==1:phase='I'
     else: phase='II'
+    #Preprocessing
     if preSplit:
-        trainingFile = 'C:/Users/Brandon/Documents/ORISE/drug_training_192.csv'
-        testFile = 'C:/Users/Brandon/Documents/ORISE/drug_test_192.csv'
-        toxcastFile = 'C:/Users/Brandon/Documents/ORISE/toxcast_test_192_Phase_'+phase+'.csv'#toxcast_test_192.csv'
+        #trainingFile = 'C:/Users/Brandon/Documents/ORISE/drug_training_192.csv'
+        #testFile = 'C:/Users/Brandon/Documents/ORISE/drug_test_192.csv'
+        #toxcastFile = 'C:/Users/Brandon/Documents/ORISE/toxcast_test_192_Phase_'+phase+'.csv'#toxcast_test_192.csv'
         train,test,toxcast,yscaler = preprocess.mainPreSplit(trainingFile,testFile,toxcastFile,
                                                      featSelect,modelType,random_state,feat_random_state,
                                                      yScale,xScale,nFeatures,numTrainingSamples,
@@ -118,7 +58,8 @@ def main(featSelect='predefined_RF',nFeatures=10,phase=1,plot=False,save=False,r
         drugs,toxcast = data_collection.getData()
         train,test,toxcast,yscaler = preprocess.main(drugs,toxcast,featSelect,modelType,
                                                      random_state, feat_random_state,yScale,
-                                                     xScale,nFeatures,numTrainingSamples,verbose)        
+                                                     xScale,nFeatures,numTrainingSamples,verbose)
+    #Model Creation
     estimator = getEstimator(modelType)
     modelParams = getModelParams(modelType,estimator)
     if modelType in ['RF']:
@@ -180,5 +121,67 @@ def getModelParams(modelType,estimator):
         modelParams = {'n_estimators':[25,50,75,100],'learning_rate':np.arange(.05,.15,.02),
                     'loss':['linear','square','exponential']}#,
     return(modelParams)
-    
+
+
+# def MonteCarlo(nSims=25,featSelect='drugs',nFeatures=10,plot=False,save=False,
+#                 random_state=1,modelType='SVR',numTrainingSamples=1045,preSplit=False,
+#                 verbose=0):
+#     res = []
+#     for i in range(nSims):
+#         if verbose > 0:print('\nMonte Carlo Simulation: ', i+1)
+#         preds,actuals = main(featSelect,nFeatures,plot,save,random_state,
+#                              i,modelType,numTrainingSamples,
+#                              preSplit,verbose)
+#         results,residuals = post_process.getResults(preds,actuals)
+#         res.append(results)
+#     try:
+#         post_process.MonteCarlo(res,verbose)
+#         return(res)
+#     except:
+#         return(res)
+#
+# def foldValidation(nFeatures=10,nFolds=10):
+#     trainingFile = 'C:/Users/Brandon/Documents/ORISE/drug_training_192.csv'
+#     testFile = 'C:/Users/Brandon/Documents/ORISE/drug_test_192.csv'
+#     toxcastFile = 'C:/Users/Brandon/Documents/ORISE/toxcast_test_192.csv'
+#     train,test,toxcast,yscaler = preprocess.mainPreSplit(trainingFile,testFile,
+#                                                          toxcastFile,nFeatures=192)
+#     kfTrain = sklearn.cross_validation.KFold(len(train['y']),nFolds)
+#     modelOrig = sklearn.ensemble.RandomForestRegressor(n_estimators=100,random_state=1)
+#     model = sklearn.ensemble.RandomForestRegressor(n_estimators=100)
+#     #modelOrig.fit(train['X'],train['y'])
+#     featuresListOrig = [88, 89, 154, 123, 73, 32, 65, 66, 69, 108, 129]#np.sort(np.argsort(modelOrig.feature_importances_)[-nFeatures:])
+#     print('Original Feature List\n',featuresListOrig)
+#     modelOrig.fit(train['X'][:,featuresListOrig],train['y_scaled'])
+#     drugTrainRes = {'Train':{'mae':[],'rmse':[]},'Drugs':{'mae':[],'rmse':[]},'Toxcast':{'mae':[],'rmse':[]}}
+#     kfTox = sklearn.cross_validation.KFold(len(toxcast['y']),nFolds)
+#     res = {'Train':{'mae':[],'rmse':[]},'Drugs':{'mae':[],'rmse':[]},'Toxcast':{'mae':[],'rmse':[]}}
+#     toxTrainRes = {'Train':{'mae':[],'rmse':[]},'Drugs':{'mae':[],'rmse':[]},'Toxcast':{'mae':[],'rmse':[]}}
+#     X = {'Train':train['X'],'Drugs':test['X'],'Toxcast':[]}
+#     actuals={'Train':train['y'],'Drugs':test['y'],'Toxcast':[]}
+#     for trainInd,testInd in kfTox:
+#         X_train,X_test = toxcast['X'][trainInd],toxcast['X'][testInd]
+#         y_train,y_test = toxcast['y_scaled'][trainInd],toxcast['y'][testInd]
+#         model.fit(X_train,y_train)
+#         featuresList = np.sort(np.argsort(model.feature_importances_)[-nFeatures:])
+#         print(featuresList)
+#         model.fit(X_train[:,featuresList],y_train)
+#         X['Toxcast'] = X_test
+#         actuals['Toxcast'] = y_test
+#         for key in toxTrainRes:
+#             predsOrig = post_process.unscale(modelOrig.predict(X[key][:,featuresListOrig]),train,yscaler)
+#             preds = post_process.unscale(model.predict(X[key][:,featuresList]),train,yscaler)
+#             drugTrainRes[key]['mae'].append(sklearn.metrics.mean_absolute_error(predsOrig,actuals[key]))
+#             drugTrainRes[key]['rmse'].append(np.sqrt(sklearn.metrics.mean_squared_error(predsOrig,actuals[key])))
+#             toxTrainRes[key]['mae'].append(sklearn.metrics.mean_absolute_error(preds,actuals[key]))
+#             toxTrainRes[key]['rmse'].append(np.sqrt(sklearn.metrics.mean_squared_error(preds,actuals[key])))
+#     d = drugTrainRes; t = toxTrainRes
+#     for key in t:
+#         print(key);print('Drugs Training')
+#         print(np.mean(d[key]['mae']),np.std(d[key]['mae']));
+#         print(np.mean(d[key]['rmse']),np.std(d[key]['rmse']))
+#         print('Toxcast Training')
+#         print(np.mean(t[key]['mae']),np.std(t[key]['mae']));
+#         print(np.mean(t[key]['rmse']),np.std(t[key]['rmse']))
+#     return(drugTrainRes,toxTrainRes)
 
