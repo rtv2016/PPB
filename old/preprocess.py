@@ -1,11 +1,12 @@
-import pandas as pd
+import sys
+import random
+
 import numpy as np
-import sys, math, random, sklearn
-import data_collection
-from sklearn import preprocessing, feature_selection, svm, ensemble, linear_model,grid_search
-#Add folders to system path
-sys.path.append('C:/Users/Brandon/Desktop')
-sys.path.append('C:/Users/Brandon/Documents/ORISE/')
+import sklearn
+from sklearn import grid_search
+
+from old import data_collection
+
 
 """preprocess.py: Split training and test sets, and scale values
 Example usage:

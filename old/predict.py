@@ -1,9 +1,11 @@
-import pandas as pd
+import sys
+
 import numpy as np
-import sklearn, sys
+import sklearn
+
 sys.path.append('C:/Users/Brandon/Desktop')
 sys.path.append('C:/Users/Brandon/Documents/ORISE/')
-import data_collection, preprocess, post_process
+from old import post_process, preprocess, data_collection
 
 """predict.py: Model evaluation and prediction
 Example usage:

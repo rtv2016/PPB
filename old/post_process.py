@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
 from sklearn import metrics,neighbors
-import visualize
+
+from old import visualize
+
 """post_process.py: Process predictions and get results
 Example usage:
 import prediction
