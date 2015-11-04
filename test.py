@@ -3,7 +3,7 @@ from sklearn import metrics
 import numpy as np
 
 modelType = 'RF'
-featTypes = 'SVR'
+featTypes = 'RF'
 nFeatures = None  # 10
 
 train, test = chem.Collector().collect()
