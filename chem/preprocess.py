@@ -119,16 +119,18 @@ def get_n_features(data, nFeatures, yscaler, featSelect, featTypes, modelType, n
 
 
 def aic_curve(train, yscaler=None, featSelect='drugs', featTypes='RF', modelType='RF', nSims=10, verbose=0):
-    numFeatures = [1] + list(np.arange(5, len(train['X']) / 10, 5)) + \
-                  list(np.arange(len(train['X']) / 10, len(train['X']) / 4, 10)) + \
-                  list(np.arange(len(train['X']) / 4, len(train['X']) / 2, 20))
+    numFeatures = [1] + list(np.arange(5, len(train['X'][0]) / 10, 5)) + \
+                  list(np.arange(len(train['X'][0]) / 10, len(train['X'][0]) / 4, 10)) + \
+                  list(np.arange(len(train['X'][0]) / 4, len(train['X'][0]) / 2, 20))
     aic = {}
     bic = {}
     rmse = {}
     for n in numFeatures:
         n = int(n)
         model = chem.Modeler(modelType)
-        if verbose > 0:print(n, ' features being tested')
+        if verbose > 0:
+            print(n, ' features being tested')
+            print(model.model)
         featureListAgg = []
         for i in range(nSims):
             featureListAgg += list(find_features(train, n, featSelect,featTypes, feat_random_state=i))

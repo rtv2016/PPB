@@ -17,7 +17,7 @@ __status__ = "Development"
 
 
 class Modeler:
-    def __init__(self, modelType='RF', random_state=0, verbose=0):
+    def __init__(self, modelType='RF', random_state=None, verbose=0):
         self.__dict__.update(**locals())
         # Model Creation
         estimator = getEstimator(self.modelType)
@@ -103,7 +103,7 @@ def getEstimator(modelType, random_state=0):
     if modelType == 'KNN':
         estimator = KNeighborsRegressor()
     if modelType == 'RF':
-        estimator = RandomForestRegressor(n_estimators=100, random_state=random_state)
+        estimator = RandomForestRegressor(n_estimators=250, random_state=random_state, n_jobs=-1)
 
     return estimator
 

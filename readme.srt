@@ -1,0 +1,1 @@
+chem is a package intended to provide a structured methodology for QSAR regression modelling.  
