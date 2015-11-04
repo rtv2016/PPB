@@ -1,47 +1,35 @@
-import sys
 import numpy as np
-import sklearn
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
 from sklearn.grid_search import GridSearchCV
-import inspect,warnings,copy
+import inspect
+import warnings
 
-"""predict.py: Model evaluation and prediction
-Example usage:
-import data_collection as dc
-import preprocess, predict
-drugs,toxcast = dc.getData(None,None); #Now use GUI to select appropriate files
-train,test,toxcast = preprocess.main(drugs,toxcast)
-predictions,actual_values = predict.main()
-
-Changes for version_0.0:
-  updated SVM grid search parameters
-  removed grid search with RF, only set n_estimators = 300
-  added MonteCristo style simulation
+"""model.py: Model evaluation and prediction
 """
-__author__    = "Brandon Veber"
-__email__     = "veber001@umn.edu"
-__version__   = "0.1"
-__date__      = "10/31/2015"
-__credits__   = ["Brandon Veber", "Rogelio Tornero-Velez", "Brandall Ingle",
-                 "John Nichols"]
-__status__    = "Development"
+__author__ = "Brandon Veber"
+__email__ = "veber001@umn.edu"
+__version__ = "0.1"
+__date__ = "10/31/2015"
+__credits__ = ["Brandon Veber", "Rogelio Tornero-Velez", "Brandall Ingle", "John Nichols"]
+__status__ = "Development"
+
 
 class Modeler:
     def __init__(self, modelType='RF', random_state=0, verbose=0):
         self.__dict__.update(**locals())
-        #Model Creation
+        # Model Creation
         estimator = getEstimator(self.modelType)
         modelParams = getModelParams(self.modelType, estimator)
         if self.modelType in ['RF']:
             self.model = getEstimator(self.modelType, self.random_state)
         else:
-            self.model = GridSearchCV(estimator, modelParams,#fit_params={'sample_weight':weights},
-                                       scoring='mean_squared_error', cv=3, verbose=self.verbose, n_jobs=1)
+            self.model = GridSearchCV(estimator, modelParams, scoring='mean_squared_error', cv=3,
+                                      verbose=self.verbose, n_jobs=1)
 
     def fit(self, X, y):
-        self.model.fit(X,y)
+        self.model.fit(X, y)
         return self
 
     def predict(self, X):
@@ -108,29 +96,27 @@ class Modeler:
         return out
 
 
-def getEstimator(modelType,random_state=0):
-    if modelType in ['libsvm_rbf','libsvm_lin','SVR']:
+def getEstimator(modelType, random_state=0):
+    estimator = None
+    if modelType in ['libsvm_rbf', 'libsvm_lin', 'SVR']:
         estimator = SVR()
     if modelType == 'KNN':
         estimator = KNeighborsRegressor()
     if modelType == 'RF':
-        estimator = RandomForestRegressor(n_estimators=100,random_state=random_state)
+        estimator = RandomForestRegressor(n_estimators=100, random_state=random_state)
 
     return estimator
 
-def getModelParams(modelType,estimator):
+
+def getModelParams(modelType, estimator):
     modelParams = None
     if modelType == 'SVR':
-        modelParams = {'kernel':['rbf'],'C':[10,50],
-            'epsilon':np.logspace(-1,0,3),#,'gamma':[.1,.25],#np.arange(.02,.15,.02),#np.logspace(-2,0,3)
-            'cache_size':[4096]}
-    if modelType =='KNN':
-        modelParams = {'n_neighbors':[2,10,25],'leaf_size':[1,10],#'weights':['uniform','distance'],
-                    'algorithm':['auto','ball_tree']}#,
+        modelParams = {'kernel': ['rbf'], 'C': [10, 50], 'epsilon': np.logspace(-1, 0, 3), 'cache_size': [4096]}
+    if modelType == 'KNN':
+        modelParams = {'n_neighbors': [2, 10, 25], 'leaf_size': [1, 10], 'algorithm': ['auto', 'ball_tree']}
     if modelType == 'RF':
-        modelParams = {'n_estimators':[500],'n_jobs':[-1],
-                    'max_features':['auto'],'min_samples_split':[50]}
+        modelParams = {'n_estimators': [500], 'n_jobs': [-1], 'max_features': ['auto'], 'min_samples_split': [50]}
     if modelType == 'Adaboost':
-        modelParams = {'n_estimators':[25,50,75,100],'learning_rate':np.arange(.05,.15,.02),
-                    'loss':['linear','square','exponential']}#,
+        modelParams = {'n_estimators': [25, 50, 75, 100], 'learning_rate': np.arange(.05, .15, .02),
+                       'loss': ['linear', 'square', 'exponential']}
     return modelParams

@@ -2,15 +2,17 @@ import chem
 from sklearn import metrics
 import numpy as np
 
-modelType = 'RF'
+modelType = 'KNN'
 featTypes = 'RF'
-train,test = chem.Collector().collect()
+nFeatures = None  # 10
+
+train, test = chem.Collector().collect()
 scaler = chem.Scaler()
 train_scaled = scaler.fit_transform(train)
 test_scaled = {}
 for key in test:
     test_scaled[key] = scaler.transform(test[key])
-reducer = chem.Reducer(yscaler=scaler.yscaler, nFeatures=10, featSelect='drugs', featTypes=featTypes,
+reducer = chem.Reducer(yscaler=scaler.yscaler, nFeatures=nFeatures, featSelect='drugs', featTypes=featTypes,
                        modelType=modelType, nSims=25, verbose=2)
 train_scaled_reduced = reducer.fit_transform(train_scaled)
 print(train['X'].columns.values[reducer.featureList], reducer.featureList)

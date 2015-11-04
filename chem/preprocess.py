@@ -2,106 +2,107 @@ import random
 from collections import Counter
 import numpy as np
 import sklearn
-from sklearn import grid_search,preprocessing,metrics,cross_validation
+from sklearn import grid_search, preprocessing, metrics, cross_validation
 import chem
-
 
 """preprocess.py: Scale feature set and target values, reduce features
 """
-__author__    = "Brandon Veber"
-__email__     = "veber001@umn.edu"
-__date__      = "10/31/2015"
-__credits__   = ["Brandon Veber", "Rogelio Tornero-Velez", "Brandall Ingle",
-                 "John Nichols"]
-__status__    = "Development"
+__author__ = "Brandon Veber"
+__email__ = "veber001@umn.edu"
+__date__ = "10/31/2015"
+__credits__ = ["Brandon Veber", "Rogelio Tornero-Velez", "Brandall Ingle", "John Nichols"]
+__status__ = "Development"
+
 
 class lnKaScaler:
     def __init__(self):
         self.description = "Scale fraction unbound to pseudo-equilibrium constant"
 
-    def fit(self,data):
+    def fit(self, data):
         return self
 
-    def fit_transform(self,values):
-        y_temp = np.array([np.max([.001,np.min([.99,sample])]) for sample in values])
-        return .5*np.log(y_temp/(1-y_temp))
+    def fit_transform(self, values):
+        y_temp = np.array([np.max([.001, np.min([.99, sample])]) for sample in values])
+        return .5 * np.log(y_temp / (1 - y_temp))
 
-    def transform(self,values):
-        y_temp = np.array([np.max([.001,np.min([.99,sample])]) for sample in values])
-        return .5*np.log(y_temp/(1-y_temp))
+    def transform(self, values):
+        y_temp = np.array([np.max([.001, np.min([.99, sample])]) for sample in values])
+        return .5 * np.log(y_temp / (1-y_temp))
 
-    def inverse_transform(self,values):
-        return np.exp(2*values)/(1+np.exp(2*values))
+    def inverse_transform(self, values):
+        return np.exp(2 * values) / (1 + np.exp(2 * values))
+
 
 class Scaler:
-    xscalers = {'MinMax':preprocessing.MinMaxScaler(),
-            'standard':preprocessing.StandardScaler()}
-    yscalers = {'lnKa':lnKaScaler(),'standard':preprocessing.StandardScaler()}
-    def __init__(self,featSelect='predefined_RF',featTypes='RF',
-                 random_state=1,yscale='lnKa',xscale='MinMax',verbose=0):
+    xscalers = {'MinMax': preprocessing.MinMaxScaler(), 'standard': preprocessing.StandardScaler()}
+    yscalers = {'lnKa': lnKaScaler(), 'standard': preprocessing.StandardScaler()}
+
+    def __init__(self, featSelect='predefined_RF', featTypes='RF',
+                 random_state=1, yscale='lnKa', xscale='MinMax', verbose=0):
         self.__dict__.update(**locals())
         self.imputer = preprocessing.Imputer()
         self.xscaler = self.xscalers[self.xscale]
         self.yscaler = self.yscalers[self.yscale]
 
-    def fit(self,data):
-        xscaler=self.xscaler; yscaler = self.yscaler
+    def fit(self, data):
         self.imputer.fit(data['X'])
         self.xscaler.fit(data['X'])
         self.yscaler.fit(data['y'])
 
-    def fit_transform(self,data):
+    def fit_transform(self, data):
         X_scaled = self.imputer.fit_transform(data['X'])
-        X_scaled = self.xscaler.fit_transform(data['X'])
+        X_scaled = self.xscaler.fit_transform(X_scaled)
         y_scaled = self.yscaler.fit_transform(data['y'])
-        return {'X':X_scaled,'y':y_scaled}
+        return {'X': X_scaled, 'y': y_scaled}
 
-    def transform(self,data):
+    def transform(self, data):
         X_scaled = self.imputer.transform(data['X'])
-        X_scaled = self.xscaler.transform(data['X'])
+        X_scaled = self.xscaler.transform(X_scaled)
         y_scaled = self.yscaler.transform(data['y'])
-        return {'X':X_scaled,'y':y_scaled}
+        return {'X': X_scaled, 'y': y_scaled}
 
-    def inverse_transform(self,data):
+    def inverse_transform(self, data):
         X_orig = self.xscaler.inverse_transform(data['X'])
         y_orig = self.yscaler.inverse_transform(data['y'])
-        return {'X':X_orig,'y':y_orig}
+        return {'X': X_orig, 'y': y_orig}
+
 
 class Reducer:
     def __init__(self, yscaler = None, nFeatures=None, featSelect='drugs', featTypes='RF', modelType='RF',
                  nSims=10, verbose=0):
         self.__dict__.update(**locals())
+        self.aic = None
+        self.bic = None
+        self.rmse = None
+        self.featureList = None
 
-    def fit(self,data):
+    def fit(self, data):
         self.nFeatures, self.aic, self.bic, self.rmse = get_n_features(data, self.nFeatures, self.yscaler,
                                                                        self.featSelect, self.featTypes, self.modelType,
                                                                        self.nSims, self.verbose)
-        self.featureList, self.featureRank = aggregate_feature_list(data, self.nFeatures, self.yscaler,
-                                                                       self.featSelect, self.featTypes, self.modelType,
-                                                                       self.nSims, self.verbose)
+        self.featureList, self.featureRank = aggregate_feature_list(data, self.nFeatures, self.featSelect,
+                                                                    self.featTypes, self.nSims)
         return self
 
-    def transform(self,data):
-        return data['X'][:,self.featureList]
+    def transform(self, data):
+        return data['X'][:, self.featureList]
 
-    def fit_transform(self,data):
+    def fit_transform(self, data):
         self.nFeatures, self.aic, self.bic, self.rmse = get_n_features(data, self.nFeatures, self.yscaler,
                                                                        self.featSelect, self.featTypes, self.modelType,
                                                                        self.nSims, self.verbose)
-        self.featureList, self.featureRank = aggregate_feature_list(data, self.nFeatures, self.yscaler,
-                                                                       self.featSelect, self.featTypes, self.modelType,
-                                                                       self.nSims, self.verbose)
-        return data['X'][:,self.featureList]
+        self.featureList, self.featureRank = aggregate_feature_list(data, self.nFeatures, self.featSelect,
+                                                                    self.featTypes, self.nSims)
+        return data['X'][:, self.featureList]
 
-    def set_params(self,**kwargs):
+    def set_params(self, **kwargs):
         self.__dict__.update(**kwargs)
 
 
-def aggregate_feature_list(data, nFeatures, yscaler, featSelect, featTypes, modelType, nSims, verbose):
+def aggregate_feature_list(data, nFeatures, featSelect, featTypes, nSims):
     featureListAgg = []
     for n in range(nSims):
-        featureListAgg += list(find_features(data, nFeatures, featSelect,
-                                            featTypes, n))
+        featureListAgg += list(find_features(data, nFeatures, featSelect, featTypes, n))
     featureList = [item[0] for item in Counter(featureListAgg).most_common(nFeatures)]
     featureRank = [item[1] for item in Counter(featureListAgg).most_common(nFeatures)]
     return featureList, featureRank
@@ -118,30 +119,31 @@ def get_n_features(data, nFeatures, yscaler, featSelect, featTypes, modelType, n
 
 
 def aic_curve(train, yscaler=None, featSelect='drugs', featTypes='RF', modelType='RF', nSims=10, verbose=0):
-    numFeatures = [1]+list(np.arange(5, len(train['X'])/10, 5))+list(np.arange(len(train['X'])/10, len(train['X'])/4, 10))+list(np.arange(len(train['X'])/4, len(train['X'])/2, 20))
+    numFeatures = [1] + list(np.arange(5, len(train['X']) / 10, 5)) + \
+                  list(np.arange(len(train['X']) / 10, len(train['X']) / 4, 10)) + \
+                  list(np.arange(len(train['X']) / 4, len(train['X']) / 2, 20))
     aic = {}
     bic = {}
     rmse = {}
     for n in numFeatures:
         n = int(n)
-        scaler = Scaler('drugs')
-        model = chem.Modeler()
+        model = chem.Modeler(modelType)
         if verbose > 0:print(n, ' features being tested')
         featureListAgg = []
         for i in range(nSims):
-            featureListAgg+=list(find_features(train, n, featSelect,featTypes, feat_random_state=i))
+            featureListAgg += list(find_features(train, n, featSelect,featTypes, feat_random_state=i))
         featureList = [item[0] for item in Counter(featureListAgg).most_common(n)]
         featureRank = [item[1] for item in Counter(featureListAgg).most_common(n)]
-        preds = cross_validation.cross_val_predict(model,train['X'][:,featureList], train['y'],cv=5)
+        preds = cross_validation.cross_val_predict(model, train['X'][:, featureList], train['y'], cv=5)
         if yscaler:
             preds_unscaled = yscaler.inverse_transform(preds)
             actuals_unscaled = yscaler.inverse_transform(train['y'])
         else:
             preds_unscaled = preds
             actuals_unscaled = train['y']
-        rmse[n] = np.sqrt(metrics.mean_squared_error(preds_unscaled,actuals_unscaled))
-        aic[n] = calculate_aic(len(preds), rmse[n],n)
-        bic[n] = calculate_bic(len(preds), rmse[n],n)
+        rmse[n] = np.sqrt(metrics.mean_squared_error(preds_unscaled, actuals_unscaled))
+        aic[n] = calculate_aic(len(preds), rmse[n], n)
+        bic[n] = calculate_bic(len(preds), rmse[n], n)
         if verbose > 1:
             print('AIC:', aic[n])
             print('BIC: ', bic[n])
@@ -149,16 +151,16 @@ def aic_curve(train, yscaler=None, featSelect='drugs', featTypes='RF', modelType
     return aic, bic, rmse
 
 
-def calculate_aic(m,rmse,n):
-    return m*np.log(100*rmse**2)+2*(n+1)
+def calculate_aic(m, rmse, n):
+    return m * np.log(100 * rmse ** 2) + 2 * (n + 1)
 
 
-def calculate_bic(m,rmse,n):
-    return m*np.log(100*rmse**2)+n*np.log(m)
+def calculate_bic(m, rmse, n):
+    return m * np.log(100 * rmse ** 2) + n * np.log(m)
 
 
-def find_features(data,nFeatures=10,featSelect='drugs',
-                 featTypes='RF',feat_random_state=4):
+def find_features(data, nFeatures=10, featSelect='drugs',
+                 featTypes='RF', feat_random_state=4):
     """Find the top features for a given dataset using LinearSVR Lasso and Random Forest
     Inputs
       data: matrix, n x d matrix (n = number of samples; d = number of features). Required
@@ -166,62 +168,61 @@ def find_features(data,nFeatures=10,featSelect='drugs',
     Outputs
       featureList: list, n top features for each machine learning algorithm
     """
-    #Transform data to numpy array
+    # Transform data to numpy array
     if featSelect.split('_')[0] == 'predefined':
-        return(sub_features(featSelect.split('_')[1]))
+        return sub_features(featSelect.split('_')[1])
     elif featSelect == 'drugs':
-        #Initialize Dictionaries
-        clf,topFeatures = {},{}
-        endIndex = int(len(data['y'])/2)
+        # Initialize Dictionaries
+        clf,topFeatures = {}, {}
+        endIndex = int(len(data['y']) / 2)
         random.seed(feat_random_state)
-        ind = random.sample(range(len(data['y'])),len(data['y']))
+        ind = random.sample(range(len(data['y'])), len(data['y']))
         X = data['X'][ind]
         y = data['y'][ind]
         if featTypes not in ['SVR','RF','Lasso']: featTypes = 'RF'
-        #if featTypes == 'SVR': featTypes = 'RF'
-        #Recursive Feature Elimination for SVR
+        # if featTypes == 'SVR': featTypes = 'RF'
+        # Recursive Feature Elimination for SVR
         if 'SVR' in featTypes:
-            #orig: 4
+            # orig: 4
 
             grid = grid_search.GridSearchCV(sklearn.svm.LinearSVR(random_state=feat_random_state),
-                                            {'C':np.logspace(-2,0,3),'epsilon':np.logspace(-2,0,3)#,
-                                             #'loss':['epsilon_insensitive','squared_epsilon_insensitive']
-                                             #}).fit(X[:endIndex],y[:endIndex])
-                                            }).fit(X[:endIndex],y[:endIndex])
+                                            {'C': np.logspace(-2,0,3), 'epsilon': np.logspace(-2,0,3)  #,
+                                             # 'loss':['epsilon_insensitive','squared_epsilon_insensitive']
+                                             # }).fit(X[:endIndex],y[:endIndex])
+                                            }).fit(X[:endIndex], y[:endIndex])
             #model = grid.best_estimator_;print(model)
-            model = sklearn.svm.LinearSVR(C=.1,random_state=feat_random_state)
-            clf['SVR'] = sklearn.feature_selection.RFE(model,nFeatures,10).fit(X[:endIndex],y[:endIndex])
-##            clf['SVR'] = sklearn.feature_selection.RFE(sklearn.svm.LinearSVR(random_state=feat_random_state),
-##                                                   nFeatures,10).fit(data['X'][:endIndex],data['y'][:endIndex])
+            model = sklearn.svm.LinearSVR(C=.1, random_state=feat_random_state)
+            clf['SVR'] = sklearn.feature_selection.RFE(model, nFeatures,10).fit(X[:endIndex], y[:endIndex])
+            # clf['SVR'] = sklearn.feature_selection.RFE(sklearn.svm.LinearSVR(random_state=feat_random_state),
+            #                                        nFeatures,10).fit(data['X'][:endIndex],data['y'][:endIndex])
             #Indices of top SVR features
-            return(np.where(clf['SVR'].ranking_ == 1)[0])
-        #Recursive Feature Elimination for Lasso
+            return np.where(clf['SVR'].ranking_ == 1)[0]
+        # Recursive Feature Elimination for Lasso
         if 'Lasso' in featTypes:
             clf['Lasso'] = sklearn.feature_selection.RFE(sklearn.linear_model.Lasso(alpha=.001),
-                                                   nFeatures).fit(X[:endIndex],y[:endIndex])
-            #Indices of top Lasso features
-            return(np.where(clf['Lasso'].ranking_ == 1)[0])
-        #Random Forest
+                                                   nFeatures).fit(X[:endIndex], y[:endIndex])
+            # Indices of top Lasso features
+            return np.where(clf['Lasso'].ranking_ == 1)[0]
+        # Random Forest
         if 'RF' in featTypes:
             clf['RF'] = sklearn.ensemble.RandomForestRegressor(random_state=feat_random_state,
-                                                               n_estimators=250).fit(X[:endIndex],
-                                                                                        y[:endIndex])
-            #Indices of top RF features
-##            print(np.argsort(clf['RF'].feature_importances_)[-nFeatures:])
-            return(np.argsort(clf['RF'].feature_importances_)[-nFeatures:])
-##            return(np.sort(np.argsort(clf['RF'].feature_importances_)[-nFeatures:]))
+                                                               n_estimators=250).fit(X[:endIndex], y[:endIndex])
+            # Indices of top RF features
+            # print(np.argsort(clf['RF'].feature_importances_)[-nFeatures:])
+            return np.argsort(clf['RF'].feature_importances_)[-nFeatures:]
+            # return(np.sort(np.argsort(clf['RF'].feature_importances_)[-nFeatures:]))
     elif featSelect == None:
-        return(range(len(data['X'][0])))
+        return range(len(data['X'][0]))
     else:
         print('Incorrect feature selection type')
 
 def sub_features(modelType):
-    #featureList = 'a_donacc BCUT_SLOGP_0 BCUT_SLOGP_2 BCUT_SMR_2 BCUT_SMR_3 GCUT_PEOE_0 GCUT_SLOGP_0 GCUT_SLOGP_1 GCUT_SLOGP_2 logS PEOE_RPC- PEOE_VSA+0 PEOE_VSA+1 PEOE_VSA+3 PEOE_VSA-3 PEOE_VSA-4 PEOE_VSA_FNEG SlogP_VSA7 SMR_VSA2 SMR_VSA4'.split(' ')
-    #featuresList = [65,73,87,175]#['GCUT_SLOGP_0', 'logS', 'PEOE_RPC-', 'PEOE_VSA+1']
-    #featuresList = [15, 22, 29, 31, 33, 35, 56, 65, 66, 68, 69, 73, 87, 89, 94, 103, 120, 175,176, 178]
+    # featureList = 'a_donacc BCUT_SLOGP_0 BCUT_SLOGP_2 BCUT_SMR_2 BCUT_SMR_3 GCUT_PEOE_0 GCUT_SLOGP_0 GCUT_SLOGP_1 GCUT_SLOGP_2 logS PEOE_RPC- PEOE_VSA+0 PEOE_VSA+1 PEOE_VSA+3 PEOE_VSA-3 PEOE_VSA-4 PEOE_VSA_FNEG SlogP_VSA7 SMR_VSA2 SMR_VSA4'.split(' ')
+    # featuresList = [65,73,87,175]#['GCUT_SLOGP_0', 'logS', 'PEOE_RPC-', 'PEOE_VSA+1']
+    # featuresList = [15, 22, 29, 31, 33, 35, 56, 65, 66, 68, 69, 73, 87, 89, 94, 103, 120, 175,176, 178]
     if modelType == 'SVR': featuresList = [89, 175, 123, 154, 26, 8, 23, 161, 88, 121]
     else: featuresList = [89, 88, 154, 123, 73, 32, 65, 66, 69, 129]
 
-    #featureList = ['logS']
-    return(featuresList)
+    # featureList = ['logS']
+    return featuresList
 
