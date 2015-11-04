@@ -2,8 +2,8 @@ import chem
 from sklearn import metrics
 import numpy as np
 
-modelType = 'KNN'
-featTypes = 'RF'
+modelType = 'RF'
+featTypes = 'SVR'
 nFeatures = None  # 10
 
 train, test = chem.Collector().collect()
