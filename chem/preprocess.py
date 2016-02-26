@@ -34,8 +34,12 @@ class lnKaScaler:
 
 
 class Scaler:
-    xscalers = {'MinMax': preprocessing.MinMaxScaler(), 'standard': preprocessing.StandardScaler()}
-    yscalers = {'lnKa': lnKaScaler(), 'standard': preprocessing.StandardScaler()}
+    xscalers = {'MinMax': preprocessing.MinMaxScaler(),
+                'standard': preprocessing.StandardScaler(),
+                None: None}
+    yscalers = {'lnKa': lnKaScaler(),
+                'standard': preprocessing.StandardScaler(),
+                None: None}
 
     def __init__(self, featSelect='predefined_RF', featTypes='RF',
                  random_state=1, yscale='lnKa', xscale='MinMax', verbose=0):
@@ -45,26 +49,46 @@ class Scaler:
         self.yscaler = self.yscalers[self.yscale]
 
     def fit(self, data):
+        y = np.reshape(data['y'], (-1, 1))
         self.imputer.fit(data['X'])
-        self.xscaler.fit(data['X'])
-        self.yscaler.fit(data['y'])
+        if self.scale is not None:
+            self.xscaler.fit(data['X'])
+        if self.yscale is not None:
+            self.yscaler.fit(y)
 
     def fit_transform(self, data):
+        y = np.reshape(data['y'], (-1, 1))
         X_scaled = self.imputer.fit_transform(data['X'])
-        X_scaled = self.xscaler.fit_transform(X_scaled)
-        y_scaled = self.yscaler.fit_transform(data['y'])
-        return {'X': X_scaled, 'y': y_scaled}
+        if self.xscale is not None:
+            X_scaled = self.xscaler.fit_transform(X_scaled)
+        if self.yscale is not None:
+            y_scaled = self.yscaler.fit_transform(y)
+        else:
+            y_scaled = y
+        return {'X': X_scaled, 'y': np.reshape(y_scaled, (len(y_scaled), ))}
 
     def transform(self, data):
+        y = np.reshape(data['y'], (-1, 1))
         X_scaled = self.imputer.transform(data['X'])
-        X_scaled = self.xscaler.transform(X_scaled)
-        y_scaled = self.yscaler.transform(data['y'])
-        return {'X': X_scaled, 'y': y_scaled}
+        if self.xscale is not None:
+            X_scaled = self.xscaler.transform(X_scaled)
+        if self.yscale is not None:
+            y_scaled = self.yscaler.transform(y)
+        else:
+            y_scaled = y
+        return {'X': X_scaled, 'y': np.reshape(y_scaled, (len(y_scaled), ))}
 
     def inverse_transform(self, data):
-        X_orig = self.xscaler.inverse_transform(data['X'])
-        y_orig = self.yscaler.inverse_transform(data['y'])
-        return {'X': X_orig, 'y': y_orig}
+        y = np.reshape(data['y'], (-1, 1))
+        if self.xscale is None:
+            X_orig = self.xscaler.inverse_transform(data['X'])
+        else:
+            X_orig = data['X']
+        if self.yscaler is not None:
+            y_orig = self.yscaler.inverse_transform(data['y'])
+        else:
+            y_orig = y
+        return {'X': X_orig, 'y': np.reshape(y_orig, (len(y_orig), ))}
 
 
 class Reducer:
@@ -136,7 +160,7 @@ def aic_curve(train, yscaler=None, featSelect='drugs', featTypes='RF', modelType
             featureListAgg += list(find_features(train, n, featSelect,featTypes, feat_random_state=i))
         featureList = [item[0] for item in Counter(featureListAgg).most_common(n)]
         featureRank = [item[1] for item in Counter(featureListAgg).most_common(n)]
-        preds = cross_validation.cross_val_predict(model, train['X'][:, featureList], train['y'], cv=5)
+        preds = cross_validation.cross_val_predict(model, train['X'][:, featureList], train['y'], cv=5, n_jobs=-1)
         if yscaler:
             preds_unscaled = yscaler.inverse_transform(preds)
             actuals_unscaled = yscaler.inverse_transform(train['y'])

@@ -27,10 +27,14 @@ __date__      = "7/25/2015"
 __credits__   = ["Brandon Veber", "Rogelio Tornero-Velez", "Brandall Ingle",
                  "John Nichols"]
 __status__    = "Development"
+
+
+train_file = '/Users/bveber/chem/data/drug_training_192.csv'
+drug_test_file = '/Users/bveber/chem/data/drug_test_192.csv'
+toxcast_file = '/Users/bveber/chem/data/toxcast_test_192_Phase_I.csv'
         
 
-def main(trainingFile,testFile,toxcastFile,
-        featSelect='predefined_RF',nFeatures=10,phase=1,plot=False,save=False,random_state=1,
+def main(featSelect='predefined_RF',nFeatures=10,phase=1,plot=False,save=False,random_state=1,
          feat_random_state=1,modelType='RF',numTrainingSamples=1045,preSplit=True,
          verbose=0):
     """Main machine learning analysis module.  Collects, and scales all data.  Then makes predictions
@@ -49,6 +53,9 @@ def main(trainingFile,testFile,toxcastFile,
     else: phase='II'
     #Preprocessing
     if preSplit:
+        trainingFile = train_file
+        testFile = drug_test_file
+        toxcastFile = toxcast_file
         #trainingFile = 'C:/Users/Brandon/Documents/ORISE/drug_training_192.csv'
         #testFile = 'C:/Users/Brandon/Documents/ORISE/drug_test_192.csv'
         #toxcastFile = 'C:/Users/Brandon/Documents/ORISE/toxcast_test_192_Phase_'+phase+'.csv'#toxcast_test_192.csv'
@@ -63,16 +70,17 @@ def main(trainingFile,testFile,toxcastFile,
                                                      xScale,nFeatures,numTrainingSamples,verbose)
     #Model Creation
     estimator = getEstimator(modelType)
-    modelParams = getModelParams(modelType,estimator)
+    modelParams = getModelParams(modelType,estimator,len(train['X']))
     if modelType in ['RF']:
         clf = getEstimator(modelType)
     else:
         clf = sklearn.grid_search.GridSearchCV(estimator,modelParams,#fit_params={'sample_weight':weights},
-                                   scoring='mean_squared_error',cv=3,verbose=verbose,n_jobs=-1)
+                                   scoring='mean_squared_error',cv=3,verbose=verbose,n_jobs=1)
     #Find error dependant on y scaling
-    predsTrain = post_process.unscale(sklearn.cross_validation.cross_val_predict(clf,train['X'],train['y_scaled'],cv=5),train,'lnKa')
+#    predsTrain = post_process.unscale(sklearn.cross_validation.cross_val_predict(clf,train['X'],train['y_scaled'],cv=5),train,'lnKa')
     clf.fit(train['X'],train['y_scaled'])
-##    predsTrain = getPredictions(clf,train,train,yscaler=yscaler)
+#    predsTrain = getPredictions(clf,train,train,yscaler=yscaler)
+    predsTrain = getPredictions(clf,train,train,yscaler=yscaler)
     predsDrugs = getPredictions(clf,train,test,yscaler=yscaler)
     predsToxcast = getPredictions(clf,train,toxcast,yscaler=yscaler)
     if verbose > 0 and modelType not in ['RF']:
@@ -107,14 +115,15 @@ def getEstimator(modelType):
         
     return(estimator)
 
-def getModelParams(modelType,estimator):
+def getModelParams(modelType,estimator,n_samples):
     modelParams = None
     if modelType == 'SVR':
         modelParams = {'kernel':['rbf'],'C':[10,50],
             'epsilon':np.logspace(-1,0,3),#,'gamma':[.1,.25],#np.arange(.02,.15,.02),#np.logspace(-2,0,3)
             'cache_size':[4096]}
-    if modelType =='KNN':        
-        modelParams = {'n_neighbors':[2,10,25],'leaf_size':[1,10],#'weights':['uniform','distance'],
+    if modelType =='KNN':
+        n_neighbors = [int(x) for x in np.ceil(n_samples * np.logspace(-3,-.5,5))]
+        modelParams = {'n_neighbors':n_neighbors,#'leaf_size':[1,10],#'weights':['uniform','distance'],
                     'algorithm':['auto','ball_tree']}#,
     if modelType == 'RF':
         modelParams = {'n_estimators':[500],'n_jobs':[-1],

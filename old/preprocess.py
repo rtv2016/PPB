@@ -3,7 +3,7 @@ import random
 
 import numpy as np
 import sklearn
-from sklearn import grid_search
+from sklearn import grid_search, ensemble, feature_selection
 
 from old import data_collection
 
@@ -33,6 +33,7 @@ __date__      = "7/28/2015"
 __credits__   = ["Brandon Veber", "Rogelio Tornero-Velez", "Brandall Ingle",
                  "John Nichols"]
 __status__    = "Development"
+
 
 def main(drugs,toxcast,featSelect='drugs',featTypes='SVR',random_state=1,
          feat_random_state=4,yscale='lnKa',xscale='MinMax',nFeatures=20,
@@ -76,6 +77,7 @@ def main(drugs,toxcast,featSelect='drugs',featTypes='SVR',random_state=1,
     drugTestIon = data_collection.getIonicClass('ABNZ_Ionic_DrugTest.xlsx')
     toxIon = data_collection.getIonicClass('ABNZ_Ionic_ToxCastTest.xlsx')
     return(train,test,toxcastC,yscaler)
+
 
 def mainPreSplit(trainingFile,testFile,toxcastFile,featSelect='drugs',featTypes='SVR',
                  random_state=1,feat_random_state=4,yscale='lnKa',
@@ -146,7 +148,7 @@ def findFeatures(data,nFeatures=10,featSelect='drugs',
             return(np.where(clf['Lasso'].ranking_ == 1)[0])
         #Random Forest
         if 'RF' in featTypes:
-            clf['RF'] = sklearn.ensemble.RandomForestRegressor(random_state=feat_random_state,
+            clf['RF'] = ensemble.RandomForestRegressor(random_state=feat_random_state,
                                                                n_estimators=100).fit(X[:endIndex],
                                                                                         y[:endIndex])
             #Indices of top RF features

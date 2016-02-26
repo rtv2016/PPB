@@ -6,10 +6,12 @@ import os
 modelType = 'RF'
 featTypes = 'RF'
 nFeatures = None  # 10
-nSims = 10
+nSims = 50
+# xscale = None
 
 path = os.path.dirname(__file__)
-# train, test = chem.Collector(os.path.join(path, 'data', 'toxcast_test_192_Phase_I.csv'), os.path.join(path, 'data', 'toxcast_test_192_Phase_II.csv')).collect()
+# train, test = chem.Collector(os.path.join(path, 'data', 'toxcast_test_192_Phase_I.csv'),
+#                              os.path.join(path, 'data', 'toxcast_test_192_Phase_II.csv')).collect()
 train, test = chem.Collector().collect()
 scaler = chem.Scaler()
 train_scaled = scaler.fit_transform(train)

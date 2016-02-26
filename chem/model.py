@@ -1,10 +1,12 @@
 import numpy as np
+import warnings
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
-from sklearn.grid_search import GridSearchCV
+with warnings.catch_warnings():
+    warnings.simplefilter('ignore')
+    from sklearn.grid_search import GridSearchCV
 import inspect
-import warnings
 
 """model.py: Model evaluation and prediction
 """
@@ -26,7 +28,7 @@ class Modeler:
             self.model = getEstimator(self.modelType, self.random_state)
         else:
             self.model = GridSearchCV(estimator, modelParams, scoring='mean_squared_error', cv=3,
-                                      verbose=self.verbose, n_jobs=1)
+                                      verbose=self.verbose, n_jobs=-1)
 
     def fit(self, X, y):
         self.model.fit(X, y)

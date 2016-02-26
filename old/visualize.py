@@ -28,6 +28,7 @@ __credits__   = ["Brandon Veber", "Rogelio Tornero-Velez", "Brandall Ingle",
                  "John Nichols"]
 __status__    = "Development"
 
+
 def learningCurve(featSelect='drugs',nFeatures=20,modelType='SVR',stdev=False,preSplit=False,
                   verbose=1):
     """Takes and splits data, then plots the learning curves.
@@ -55,7 +56,7 @@ def learningCurve(featSelect='drugs',nFeatures=20,modelType='SVR',stdev=False,pr
             if verbose > 1: print('Shuffle #',i)
             #Calculate predictions with unique random sampling of drugs training/test set
             preds,actuals = predict.main(featSelect,nFeatures,modelType=modelType,numTrainingSamples=n,
-                                 feat_random_state=i,preSplit=preSplit,verbose=verbose)
+                                         feat_random_state=i,preSplit=preSplit,verbose=verbose)
             #Calculate result metrics and residual errors
             results,residuals = post_process.getResults(preds,actuals)
             #Append iteration to output error dictionary
