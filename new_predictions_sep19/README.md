@@ -8,6 +8,6 @@ To install:
 * run command in iPython: run Predictions.py
 
 To create input file:
-* Refer to new_predictions_sep19/Create_Python_Input    
+* Refer to new_predictions_sep19/Create_Python_Input for details    
 
 	
