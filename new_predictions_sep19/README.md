@@ -1,5 +1,5 @@
 chem is a package intended to provide a structured methodology for QSAR regression modeling.
-If predictions based on Ingle et al 2016 are of interest, the folder 'new_predictions_sep19' contains updates to allow for making Fup predictions based off of the trained model. 
+If predictions based on Ingle et al (2016) are of interest, the folder 'new_predictions_sep19' contains updates to allow for making Fup predictions based off of the trained model. 
 
 To install:
 * Clone this repository with a git tool (command line or GUI)
