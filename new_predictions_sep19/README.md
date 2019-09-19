@@ -5,7 +5,7 @@ To install:
 * Clone this repository with a git tool (command line or GUI)
 * Install python3
 * Navigate to new_predictons_sep19
-* run command in iPython: run Predictions.py
+* run command in Python: run Predictions.py
 
 To create input file:
 * Refer to new_predictions_sep19/Create_Python_Input for details    
