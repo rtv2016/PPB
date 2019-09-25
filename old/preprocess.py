@@ -222,7 +222,7 @@ def normalize(train,test,toxcast,xscale='MinMax',yscale='lnKa'):
     test_scaled= {'y':test['y'],'indices':test['indices']}
     toxcast_scaled = {'y':toxcast['y']}
     #Create imputer to replace missing values and transform test data
-    imputer = sklearn.preprocessing.Imputer()
+    imputer = sklearn.impute.SimpleImputer()
     train['X'] = imputer.fit_transform(train['X'])
     test['X'] = imputer.transform(test['X'])
     toxcast['X'] = imputer.transform(toxcast['X'])
@@ -270,7 +270,7 @@ def normalize2(train,test,xscale='MinMax',yscale='lnKa'):
     if 'indices' in list(test.keys()):test_scaled['indices']=test['indices']
 ##    toxcast_scaled = {'y':toxcast['y']}
     #Create imputer to replace missing values and transform test data
-    imputer = sklearn.preprocessing.Imputer()
+    imputer = sklearn.impute.SimpleImputer()
     train['X'] = imputer.fit_transform(train['X'])
     test['X'] = imputer.transform(test['X'])
 ##    toxcast['X'] = imputer.transform(toxcast['X'])

@@ -2,7 +2,7 @@ import random
 from collections import Counter
 import numpy as np
 import sklearn
-from sklearn import model_selection, preprocessing, metrics, model_selection
+from sklearn import impute, model_selection, preprocessing, metrics, model_selection
 import chem
 
 """preprocess.py: Scale feature set and target values, reduce features
@@ -23,14 +23,17 @@ class lnKaScaler:
 
     def fit_transform(self, values):
         y_temp = np.array([np.max([.001, np.min([.99, sample])]) for sample in values])
-        return .5 * np.log(y_temp / (1 - y_temp))
+        transformed = .5 * np.log(y_temp / (1 - y_temp))
+        return transformed
 
     def transform(self, values):
         y_temp = np.array([np.max([.001, np.min([.99, sample])]) for sample in values])
-        return .5 * np.log(y_temp / (1-y_temp))
+        transformed = .5 * np.log(y_temp / (1-y_temp))
+        return transformed
 
     def inverse_transform(self, values):
-        return np.exp(2 * values) / (1 + np.exp(2 * values))
+        transformed = np.exp(2 * values) / (1 + np.exp(2 * values))
+        return transformed
 
 
 class Scaler:
@@ -44,7 +47,7 @@ class Scaler:
     def __init__(self, featSelect='predefined_RF', featTypes='RF',
                  random_state=1, yscale='lnKa', xscale='MinMax', verbose=0):
         self.__dict__.update(**locals())
-        self.imputer = preprocessing.Imputer()
+        self.imputer = impute.SimpleImputer()
         self.xscaler = self.xscalers[self.xscale]
         self.yscaler = self.yscalers[self.yscale]
 

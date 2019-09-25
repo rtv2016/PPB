@@ -153,7 +153,7 @@ def unscale(y,train,yscaler=None):
     else:
         #scaler = sklearn.preprocessing.StandardScaler().fit(train['y'])
         yScaled = yscaler.transform(y)
-##        yScaled = sklearn.preprocessing.Imputer().fit_transform(yScaled)
+##        yScaled = sklearn.impute.SimpleImputer().fit_transform(yScaled)
         for i,y in enumerate(yScaled):
             if y>1: yScaled[i]=1
             elif y<0: yScaled[i] = 0
