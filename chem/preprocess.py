@@ -23,12 +23,14 @@ class lnKaScaler:
 
     def fit_transform(self, values):
         y_temp = np.array([np.max([.001, np.min([.99, sample])]) for sample in values])
-        transformed = .5 * np.log(y_temp / (1 - y_temp))
+        transform_temp = y_temp / (1 - y_temp)
+        transformed = .5 * np.log()
         return transformed
 
     def transform(self, values):
         y_temp = np.array([np.max([.001, np.min([.99, sample])]) for sample in values])
-        transformed = .5 * np.log(y_temp / (1-y_temp))
+        transform_temp = y_temp / (1-y_temp)
+        transformed = .5 * np.log(transform_temp)
         return transformed
 
     def inverse_transform(self, values):
