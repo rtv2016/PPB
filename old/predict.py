@@ -77,7 +77,7 @@ def main(featSelect='predefined_RF',nFeatures=10,phase=1,plot=False,save=False,r
         clf = sklearn.model_selection.GridSearchCV(estimator,modelParams,#fit_params={'sample_weight':weights},
                                    scoring='mean_squared_error',cv=3,verbose=verbose,n_jobs=1)
     #Find error dependant on y scaling
-#    predsTrain = post_process.unscale(sklearn.cross_validation.cross_val_predict(clf,train['X'],train['y_scaled'],cv=5),train,'lnKa')
+#    predsTrain = post_process.unscale(sklearn.model_selection.cross_val_predict(clf,train['X'],train['y_scaled'],cv=5),train,'lnKa')
     clf.fit(train['X'],train['y_scaled'])
 #    predsTrain = getPredictions(clf,train,train,yscaler=yscaler)
     predsTrain = getPredictions(clf,train,train,yscaler=yscaler)
@@ -157,7 +157,7 @@ def getModelParams(modelType,estimator,n_samples):
 #     toxcastFile = 'C:/Users/Brandon/Documents/ORISE/toxcast_test_192.csv'
 #     train,test,toxcast,yscaler = preprocess.mainPreSplit(trainingFile,testFile,
 #                                                          toxcastFile,nFeatures=192)
-#     kfTrain = sklearn.cross_validation.KFold(len(train['y']),nFolds)
+#     kfTrain = sklearn.model_selection.KFold(len(train['y']),nFolds)
 #     modelOrig = sklearn.ensemble.RandomForestRegressor(n_estimators=100,random_state=1)
 #     model = sklearn.ensemble.RandomForestRegressor(n_estimators=100)
 #     #modelOrig.fit(train['X'],train['y'])
@@ -165,7 +165,7 @@ def getModelParams(modelType,estimator,n_samples):
 #     print('Original Feature List\n',featuresListOrig)
 #     modelOrig.fit(train['X'][:,featuresListOrig],train['y_scaled'])
 #     drugTrainRes = {'Train':{'mae':[],'rmse':[]},'Drugs':{'mae':[],'rmse':[]},'Toxcast':{'mae':[],'rmse':[]}}
-#     kfTox = sklearn.cross_validation.KFold(len(toxcast['y']),nFolds)
+#     kfTox = sklearn.model_selection.KFold(len(toxcast['y']),nFolds)
 #     res = {'Train':{'mae':[],'rmse':[]},'Drugs':{'mae':[],'rmse':[]},'Toxcast':{'mae':[],'rmse':[]}}
 #     toxTrainRes = {'Train':{'mae':[],'rmse':[]},'Drugs':{'mae':[],'rmse':[]},'Toxcast':{'mae':[],'rmse':[]}}
 #     X = {'Train':train['X'],'Drugs':test['X'],'Toxcast':[]}

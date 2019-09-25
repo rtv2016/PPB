@@ -2,7 +2,7 @@ import random
 from collections import Counter
 import numpy as np
 import sklearn
-from sklearn import model_selection, preprocessing, metrics, cross_validation
+from sklearn import model_selection, preprocessing, metrics, model_selection
 import chem
 
 """preprocess.py: Scale feature set and target values, reduce features
@@ -160,7 +160,7 @@ def aic_curve(train, yscaler=None, featSelect='drugs', featTypes='RF', modelType
             featureListAgg += list(find_features(train, n, featSelect,featTypes, feat_random_state=i))
         featureList = [item[0] for item in Counter(featureListAgg).most_common(n)]
         featureRank = [item[1] for item in Counter(featureListAgg).most_common(n)]
-        preds = cross_validation.cross_val_predict(model, train['X'][:, featureList], train['y'], cv=5, n_jobs=-1)
+        preds = model_selection.cross_val_predict(model, train['X'][:, featureList], train['y'], cv=5, n_jobs=-1)
         if yscaler:
             preds_unscaled = yscaler.inverse_transform(preds)
             actuals_unscaled = yscaler.inverse_transform(train['y'])
