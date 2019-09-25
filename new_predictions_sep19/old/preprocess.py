@@ -3,7 +3,7 @@ import random
 
 import numpy as np
 import sklearn
-from sklearn import grid_search, ensemble, feature_selection
+from sklearn import model_selection, ensemble, feature_selection
 
 from old import data_collection
 
@@ -128,7 +128,7 @@ def findFeatures(data,nFeatures=10,featSelect='drugs',
         if 'SVR' in featTypes:
             #orig: 4
 
-            grid = grid_search.GridSearchCV(sklearn.svm.LinearSVR(random_state=feat_random_state),
+            grid = model_selection.GridSearchCV(sklearn.svm.LinearSVR(random_state=feat_random_state),
                                             {'C':np.logspace(-2,0,3),'epsilon':np.logspace(-2,0,3)#,
                                              #'loss':['epsilon_insensitive','squared_epsilon_insensitive']
                                              #}).fit(X[:endIndex],y[:endIndex])

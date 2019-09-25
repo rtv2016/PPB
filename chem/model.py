@@ -5,7 +5,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
 with warnings.catch_warnings():
     warnings.simplefilter('ignore')
-    from sklearn.grid_search import GridSearchCV
+    from sklearn.model_selection import GridSearchCV
 import inspect
 
 """model.py: Model evaluation and prediction

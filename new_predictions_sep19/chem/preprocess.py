@@ -2,7 +2,7 @@ import random
 from collections import Counter
 import numpy as np
 import sklearn
-from sklearn import grid_search, preprocessing, metrics, cross_validation
+from sklearn import model_selection, preprocessing, metrics, cross_validation
 import chem
 
 """preprocess.py: Scale feature set and target values, reduce features
@@ -211,7 +211,7 @@ def find_features(data, nFeatures=10, featSelect='drugs',
         if 'SVR' in featTypes:
             # orig: 4
 
-            grid = grid_search.GridSearchCV(sklearn.svm.LinearSVR(random_state=feat_random_state),
+            grid = model_selection.GridSearchCV(sklearn.svm.LinearSVR(random_state=feat_random_state),
                                             {'C': np.logspace(-2,0,3), 'epsilon': np.logspace(-2,0,3)  #,
                                              # 'loss':['epsilon_insensitive','squared_epsilon_insensitive']
                                              # }).fit(X[:endIndex],y[:endIndex])

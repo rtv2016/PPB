@@ -74,7 +74,7 @@ def main(featSelect='predefined_RF',nFeatures=10,phase=1,plot=False,save=False,r
     if modelType in ['RF']:
         clf = getEstimator(modelType)
     else:
-        clf = sklearn.grid_search.GridSearchCV(estimator,modelParams,#fit_params={'sample_weight':weights},
+        clf = sklearn.model_selection.GridSearchCV(estimator,modelParams,#fit_params={'sample_weight':weights},
                                    scoring='mean_squared_error',cv=3,verbose=verbose,n_jobs=1)
     #Find error dependant on y scaling
 #    predsTrain = post_process.unscale(sklearn.cross_validation.cross_val_predict(clf,train['X'],train['y_scaled'],cv=5),train,'lnKa')
