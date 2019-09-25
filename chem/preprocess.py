@@ -24,7 +24,7 @@ class lnKaScaler:
     def fit_transform(self, values):
         y_temp = np.array([np.max([.001, np.min([.99, sample])]) for sample in values])
         transform_temp = y_temp / (1 - y_temp)
-        transformed = .5 * np.log()
+        transformed = .5 * np.log(transform_temp)
         return transformed
 
     def transform(self, values):
