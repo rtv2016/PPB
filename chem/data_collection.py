@@ -80,8 +80,8 @@ def extract_csv(filename, targetIndex=2, descriptorIndex=5):
       dictionary: Keys are 'X' (molecular descriptors) and 'y' (target values)
     """
     allData = pd.read_csv(filename)
-    y = np.array(allData.ix[:, targetIndex])
-    X = allData.ix[:, descriptorIndex:]
+    y = np.array(allData.iloc[:, targetIndex])
+    X = allData.iloc[:, descriptorIndex:]
     return {'X': X, 'y': y}
 
 

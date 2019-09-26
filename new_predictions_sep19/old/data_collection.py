@@ -69,8 +69,8 @@ def extractCSV(filename,descriptorSet):
     #Indices for starting column location of descriptors in CSV
     indDesc={'MOE':5,'dragon':3}
     allData = pd.read_csv(filename)
-    y = np.array(allData.ix[:,indFu[descriptorSet]])
-    X = allData.ix[:,indDesc[descriptorSet]:]
+    y = np.array(allData.iloc[:,indFu[descriptorSet]])
+    X = allData.iloc[:,indDesc[descriptorSet]:]
     return({'X':X,'y':y})
 
 def getIonicClass(fname):
