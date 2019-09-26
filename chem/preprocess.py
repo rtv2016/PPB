@@ -1,6 +1,7 @@
 import random
 from collections import Counter
 import numpy as np
+import pandas as pd
 import sklearn
 from sklearn import impute, model_selection, preprocessing, metrics, model_selection
 import chem
@@ -22,13 +23,15 @@ class lnKaScaler:
         return self
 
     def fit_transform(self, values):
-        y_temp = np.array([np.max([.001, np.min([.99, sample])]) for sample in values])
+        trimmed_array = [np.max([.001, np.min([.99, sample[0]])]) for sample in values]
+        y_temp = pd.Series(trimmed_array)
         transform_temp = y_temp / (1 - y_temp)
-        transformed = .5 * np.log(transform_temp)
+        transformed = .5 * transform_temp.apply(np.log)
         return transformed
 
     def transform(self, values):
-        y_temp = np.array([np.max([.001, np.min([.99, sample])]) for sample in values])
+        trimmed_array = [np.max([.001, np.min([.99, sample[0]])]) for sample in values]
+        y_temp = pd.Series(trimmed_array)
         transform_temp = y_temp / (1-y_temp)
         transformed = .5 * np.log(transform_temp)
         return transformed
