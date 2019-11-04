@@ -3,6 +3,7 @@ import warnings
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
+
 with warnings.catch_warnings():
     warnings.simplefilter('ignore')
     from sklearn.model_selection import GridSearchCV
@@ -24,7 +25,8 @@ class Modeler:
         # Model Creation
         estimator = getEstimator(self.modelType)
         modelParams = getModelParams(self.modelType, estimator)
-        if self.modelType in ['RF']:
+        if self.modelType in ['RF', 'KNN']:
+
             self.model = getEstimator(self.modelType, self.random_state)
         else:
             self.model = GridSearchCV(estimator, modelParams, scoring='mean_squared_error', cv=3,
@@ -54,7 +56,7 @@ class Modeler:
                                "specify their parameters in the signature"
                                " of their __init__ (no varargs)."
                                " %s doesn't follow this convention."
-                               % (cls, ))
+                               % (cls,))
         # Remove 'self'
         # XXX: This is going to fail if the init is a staticmethod, but
         # who would do this?
@@ -103,7 +105,7 @@ def getEstimator(modelType, random_state=0):
     if modelType in ['libsvm_rbf', 'libsvm_lin', 'SVR']:
         estimator = SVR()
     if modelType == 'KNN':
-        estimator = KNeighborsRegressor()
+        estimator = KNeighborsRegressor(n_neighbors=10, leaf_size=30, algorithm='auto', n_jobs=-1)
     if modelType == 'RF':
         estimator = RandomForestRegressor(n_estimators=250, random_state=random_state, n_jobs=-1)
 
@@ -115,7 +117,9 @@ def getModelParams(modelType, estimator):
     if modelType == 'SVR':
         modelParams = {'kernel': ['rbf'], 'C': [10, 50], 'epsilon': np.logspace(-1, 0, 3), 'cache_size': [4096]}
     if modelType == 'KNN':
-        modelParams = {'n_neighbors': [2, 10, 25], 'leaf_size': [1, 10], 'algorithm': ['auto', 'ball_tree']}
+        # modelParams = {'n_neighbors': [2, 10, 25], 'leaf_size': [1, 10], 'algorithm': ['auto', 'ball_tree']}
+        modelParams = {'n_neighbors': [10], 'leaf_size': [1, 10], 'algorithm': ['auto', 'ball_tree']}
+
     if modelType == 'RF':
         modelParams = {'n_estimators': [500], 'n_jobs': [-1], 'max_features': ['auto'], 'min_samples_split': [50]}
     if modelType == 'Adaboost':

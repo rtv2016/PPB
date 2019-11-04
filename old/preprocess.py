@@ -158,7 +158,7 @@ def findFeatures(data,nFeatures=10,featSelect='drugs',
     elif featSelect == None:
         return(range(len(data['X'][0])))
     else:
-        print('Incorrect feature selection type')
+        print('Incorrect feature selection type')drug_test_192
         
 def subFeatures(modelType):
     #featureList = 'a_donacc BCUT_SLOGP_0 BCUT_SLOGP_2 BCUT_SMR_2 BCUT_SMR_3 GCUT_PEOE_0 GCUT_SLOGP_0 GCUT_SLOGP_1 GCUT_SLOGP_2 logS PEOE_RPC- PEOE_VSA+0 PEOE_VSA+1 PEOE_VSA+3 PEOE_VSA-3 PEOE_VSA-4 PEOE_VSA_FNEG SlogP_VSA7 SMR_VSA2 SMR_VSA4'.split(' ')
