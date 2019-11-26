@@ -16,12 +16,23 @@ __author__ = "Brandon Veber"
 __email__ = "veber001@umn.edu"
 __version__ = "0.0"
 __date__ = "10/31/2015"
-__credits__ = ["Brandon Veber", "Rogelio Tornero-Velez", "Brandall Ingle", "John Nichols"]
+__credits__ = [
+    "Brandon Veber",
+    "Rogelio Tornero-Velez",
+    "Brandall Ingle",
+    "John Nichols",
+]
 __status__ = "Development"
 
 
 class Collector:
-    def __init__(self, inputTrainingFile=None, inputTestFiles=None, targetIndex=2, descriptorIndex=5):
+    def __init__(
+        self,
+        inputTrainingFile=None,
+        inputTestFiles=None,
+        targetIndex=2,
+        descriptorIndex=5,
+    ):
         self.inputTrainingFile = inputTrainingFile
         self.inputTestFiles = inputTestFiles
         self.targetIndex = targetIndex
@@ -29,18 +40,24 @@ class Collector:
 
     def collect(self):
         if self.inputTrainingFile:
-            train = extract_csv(self.inputTrainingFile, self.targetIndex, self.descriptorIndex)
+            train = extract_csv(
+                self.inputTrainingFile, self.targetIndex, self.descriptorIndex
+            )
         elif TRAININGFILE:
             train = extract_csv(TRAININGFILE, self.targetIndex, self.descriptorIndex)
         else:
-            train = extract_csv(get_fname("Training"), self.targetIndex, self.descriptorIndex)
+            train = extract_csv(
+                get_fname("Training"), self.targetIndex, self.descriptorIndex
+            )
 
         if self.inputTestFiles:
             test = get_test(self.inputTestFiles, self.targetIndex, self.descriptorIndex)
         elif TESTFILES:
             test = get_test(TESTFILES, self.targetIndex, self.descriptorIndex)
         else:
-            test = extract_csv(get_fname("Test"), self.targetIndex, self.descriptorIndex)
+            test = extract_csv(
+                get_fname("Test"), self.targetIndex, self.descriptorIndex
+            )
         return train, test
 
 
@@ -50,7 +67,7 @@ def get_test(testFiles, targetIndex=2, descriptorIndex=5):
         for key in testFiles:
             test[key] = extract_csv(testFiles[key], targetIndex, descriptorIndex)
     elif isinstance(testFiles, str):
-        test['test'] = extract_csv(testFiles, targetIndex, descriptorIndex)
+        test["test"] = extract_csv(testFiles, targetIndex, descriptorIndex)
     return test
 
 
@@ -65,7 +82,8 @@ def get_fname(featureSet=""):
     root = Tk()
     root.update()
     fname = filedialog.askopenfilename(
-        title='Open '+featureSet+' file', filetypes=(('csv Files', '.csv'), ('All Files', '.*'))
+        title="Open " + featureSet + " file",
+        filetypes=(("csv Files", ".csv"), ("All Files", ".*")),
     )
     root.destroy()
     return fname
@@ -82,7 +100,7 @@ def extract_csv(filename, targetIndex=2, descriptorIndex=5):
     allData = pd.read_csv(filename)
     y = np.array(allData.iloc[:, targetIndex])
     X = allData.iloc[:, descriptorIndex:]
-    return {'X': X, 'y': y}
+    return {"X": X, "y": y}
 
 
 def get_ionic_class(fname):
@@ -92,4 +110,4 @@ def get_ionic_class(fname):
     Outputs:
       array. Ionic classification """
     data = pd.read_excel(fname)
-    return np.array(data['Ionic'])
+    return np.array(data["Ionic"])
