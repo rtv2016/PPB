@@ -11,8 +11,8 @@ To install using anaconda:
 * you can then run 'conda env list' to confirm that the environment is there
 
 To load the conda environment at any point thereafter
-* Then run 'conda activate ppbenv'
-* From the PPB directory and from inside the conda environment you can run 'python test.py' to confirm that it is working
+* Run 'conda activate ppbenv'
+* From the PPB directory and from inside ppbenv run 'python test.py' to confirm that it is working
 
 Devs:
 * Should additionally run 'conda install -c conda-forge black' for formatting
