@@ -12,8 +12,12 @@ To load the conda environment
 * Then run 'conda activate ppbenv'
 * Inside the conda environment you can run 'python test.py' to confirm that it is working
 
+Devs:
+* Should additionally run 'conda install -c conda-forge black' for formatting
+
 To create input file:
 * TBD
 * Update this process: Refer to new_predictions_sep19/Create_Python_Input for details    
 
 	
+conda install -c conda-forge black
