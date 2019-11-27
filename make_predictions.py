@@ -255,5 +255,5 @@ fup_SVR = np.exp(2 * SVR_preds) / (1 + np.exp(2 * SVR_preds))
 combine = {"kNN_py_pred": fup_KNN, "SVM_py_pred": fup_SVR, "RF_py_pred": fup_RF}
 doutput = pd.DataFrame(data=combine)
 
-file_name = "ToxCast_2_qc.csv"
+file_name = "output/ToxCast_2_qc.csv"
 doutput.to_csv(file_name)

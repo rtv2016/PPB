@@ -3,6 +3,7 @@ import warnings
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
+from sklearn.metrics import mean_squared_error
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
@@ -37,7 +38,7 @@ class Modeler:
             self.model = GridSearchCV(
                 estimator,
                 modelParams,
-                scoring="mean_squared_error",
+                scoring="neg_mean_squared_error",
                 cv=3,
                 verbose=self.verbose,
                 n_jobs=-1,
